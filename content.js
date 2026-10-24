@@ -20,10 +20,13 @@ window.ACADEMIC_DATA = {
         'Guanyu Liu', 'Eric Yang', 'Lynn Ai', 'Yongxin Ni', 'Bill Shi'
       ],
       year: 2026,
-      venue: 'arXiv:2602.00966 · TMLR',
-      status: 'Under submission',
+      venue: 'arXiv:2602.00966 · ACM TIST',
+      status: 'Submitted',
       type: 'preprint',
       url: 'https://arxiv.org/abs/2602.00966',
+      githubRepo: 'GradientHQ/symphony-coord',
+      githubStars: 1082,
+      githubStarsCheckedAt: '2026-10-24',
       equalContribution: false
     },
     {
@@ -34,7 +37,7 @@ window.ACADEMIC_DATA = {
       venue: 'Journal of Quality Technology',
       status: 'Under submission',
       type: 'journal',
-      url: null,
+      url: 'https://arxiv.org/abs/2610.29220',
       equalContribution: true,
       summary: 'Delay-Aware Multi-stage Forecasting (DAMF) estimates sample-dependent delays between manufacturing stages and aligns temporal information for final quality prediction.'
     },
@@ -133,49 +136,6 @@ window.ACADEMIC_DATA = {
       type: 'conference',
       url: 'https://doi.org/10.1145/3717934.3717943',
       equalContribution: false
-    }
-  ],
-  education: [
-    {
-      school: 'Northwestern University',
-      degree: 'MSc in Engineering Sciences & Applied Mathematics',
-      dates: 'September 2025 – January 2027 (expected)',
-      location: 'Evanston, Illinois, USA'
-    },
-    {
-      school: 'University of Liverpool',
-      degree: 'BSc in Applied Mathematics',
-      dates: 'September 2023 – July 2025',
-      location: 'Liverpool, UK',
-      note: 'First Class Honours'
-    },
-    {
-      school: 'Xi’an Jiaotong-Liverpool University',
-      degree: 'BSc in Applied Mathematics',
-      dates: 'September 2021 – September 2023',
-      location: 'Suzhou, China'
-    }
-  ],
-  experience: [
-    {
-      organization: 'REAL Lab · Northwestern University',
-      role: 'Graduate Research Assistant',
-      dates: '2026 – Present',
-      advisor: 'Prof. Kaize Ding',
-      summary: 'Co-leading research on large language models and vision-language models for time-series anomaly detection and precise temporal localization. Developed TANGO, including synthetic-to-real training and self-calibrated optimization.'
-    },
-    {
-      organization: 'Integrative AI Lab · Northwestern University',
-      role: 'Graduate Research Assistant',
-      dates: '2026 – Present',
-      advisor: 'Prof. Naichen Shi',
-      summary: 'Co-leading research on time-series forecasting and quality prediction for multistage manufacturing. Developed DAMF to estimate and align time-varying inter-stage delays, with evaluation on LiquidSugar data and controlled-delay benchmarks.'
-    },
-    {
-      organization: 'Institute of Automation, Chinese Academy of Sciences',
-      role: 'Research Assistant',
-      dates: 'June 2025 – September 2025',
-      summary: 'Contributed to whole-brain network modeling for neurological disease regulation through brain-imaging data preparation, dynamic functional connectivity analysis, and Dynamic Mean Field model fitting and simulation.'
     }
   ]
 };

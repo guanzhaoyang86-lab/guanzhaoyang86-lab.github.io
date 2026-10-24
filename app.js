@@ -42,6 +42,81 @@
   let currentCitation = '';
   const list = document.querySelector('#publication-list');
   const dialog = document.querySelector('#citation-dialog');
+  const repositoryStars = new Map();
+  const validStarCount = value => Number.isSafeInteger(value) && value >= 0;
+
+  function repositoryState(paper) {
+    if (typeof paper.githubRepo !== 'string') return null;
+    const match = /^([A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?)\/([A-Za-z0-9._-]{1,100})$/.exec(paper.githubRepo);
+    if (!match || match[2] === '.' || match[2] === '..') return null;
+    const key = paper.githubRepo.toLowerCase();
+    if (!repositoryStars.has(key)) {
+      const date = typeof paper.githubStarsCheckedAt === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(paper.githubStarsCheckedAt)
+        ? new Date(`${paper.githubStarsCheckedAt}T00:00:00Z`) : null;
+      const checkedAt = date && Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === paper.githubStarsCheckedAt
+        ? paper.githubStarsCheckedAt : null;
+      repositoryStars.set(key, {
+        key,
+        repo: paper.githubRepo,
+        count: validStarCount(paper.githubStars) ? paper.githubStars : null,
+        checkedAt,
+        status: 'loading',
+        requested: false
+      });
+    }
+    return repositoryStars.get(key);
+  }
+
+  function starLabel(state) {
+    const count = state.count === null ? 'Stars' : state.count.toLocaleString('en-US');
+    if (state.status === 'live') return { count, description: `${count} GitHub stars. Retrieved from GitHub during this page visit.` };
+    const snapshot = state.count === null ? 'GitHub star count unavailable.'
+      : `${count} GitHub stars. Verified snapshot${state.checkedAt ? ` from ${state.checkedAt}` : ' (date unavailable)'}.`;
+    return { count, description: `${snapshot} ${state.status === 'loading' ? 'Refreshing from GitHub.' : 'Live count unavailable.'}` };
+  }
+
+  function repositoryActions(paper) {
+    const state = repositoryState(paper);
+    if (!state) return '';
+    const url = `https://github.com/${state.repo}`;
+    const label = starLabel(state);
+    return `<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">Code</a><a class="github-stars" href="${escape(url)}/stargazers" target="_blank" rel="noopener noreferrer" data-github-stars="${escape(state.key)}" data-star-status="${state.status}" title="${escape(label.description)}" aria-label="${escape(label.description)}"><span aria-hidden="true">★</span><span data-star-count>${escape(label.count)}</span></a>`;
+  }
+
+  function updateVisibleStars(state) {
+    const label = starLabel(state);
+    list.querySelectorAll('[data-github-stars]').forEach(link => {
+      if (link.dataset.githubStars !== state.key) return;
+      link.querySelector('[data-star-count]').textContent = label.count;
+      link.dataset.starStatus = state.status;
+      link.title = label.description;
+      link.setAttribute('aria-label', label.description);
+    });
+  }
+
+  async function refreshRepositoryStars(state) {
+    if (state.requested) return;
+    state.requested = true;
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    const timeout = controller ? setTimeout(() => controller.abort(), 6000) : null;
+    try {
+      const response = await fetch(`https://api.github.com/repos/${state.repo}`, {
+        credentials: 'omit',
+        headers: { Accept: 'application/vnd.github+json' },
+        ...(controller ? { signal: controller.signal } : {})
+      });
+      if (!response.ok) throw new Error('GitHub stars unavailable');
+      const repository = await response.json();
+      if (!validStarCount(repository?.stargazers_count)) throw new Error('Invalid GitHub star count');
+      state.count = repository.stargazers_count;
+      state.status = 'live';
+    } catch {
+      state.status = 'fallback';
+    } finally {
+      clearTimeout(timeout);
+    }
+    updateVisibleStars(state);
+  }
 
   function toast(message) {
     const element = document.querySelector('#toast');
@@ -85,7 +160,7 @@
         <div><h3 class="publication-title">${title}</h3>
         <p class="publication-authors">${authorMarkup(paper)}</p>
         <div class="publication-meta"><span class="publication-venue">${escape(paper.venue)}</span>${paper.status !== 'Published' ? `<span class="status-badge">${escape(paper.status)}</span>` : ''}${paper.equalContribution ? '<span class="status-badge">Co-first author</span>' : ''}</div>
-        <div class="publication-actions">${url ? `<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${url.includes('arxiv.org') ? 'arXiv' : 'Paper'}${icon('external')}</a>` : ''}<button type="button" data-cite="${escape(paper.id)}" aria-label="Cite ${escape(paper.title)}">Cite ${icon('copy')}</button></div>
+        <div class="publication-actions">${url ? `<a href="${escape(url)}" target="_blank" rel="noopener noreferrer">${url.includes('arxiv.org') ? 'arXiv' : 'Paper'}${icon('external')}</a>` : ''}${repositoryActions(paper)}<button type="button" data-cite="${escape(paper.id)}" aria-label="Cite ${escape(paper.title)}">Cite ${icon('copy')}</button></div>
         ${paper.summary ? `<details><summary>Research focus</summary><p>${escape(paper.summary)}</p></details>` : ''}
         </div></article>`;
     }).join('');
@@ -115,8 +190,6 @@
   document.querySelector('.copy-citation').addEventListener('click', () => copy(currentCitation, 'Citation copied to clipboard'));
   document.querySelector('.copy-email').addEventListener('click', () => copy(data.profile.email, 'Email address copied'));
 
-  document.querySelector('#experience-list').innerHTML = data.experience.map(entry => `<article class="timeline-item"><div class="entry-top"><h3>${escape(entry.organization)}</h3><span class="entry-date">${escape(entry.dates)}</span></div><p class="entry-role">${escape(entry.role)}</p>${entry.advisor ? `<p class="entry-advisor">With ${escape(entry.advisor)}</p>` : ''}<p class="entry-summary">${escape(entry.summary)}</p></article>`).join('');
-  document.querySelector('#education-list').innerHTML = data.education.map(entry => `<article class="education-item"><div><div class="entry-top"><h3>${escape(entry.school)}</h3><span class="entry-date">${escape(entry.dates)}</span></div><p class="entry-role">${escape(entry.degree)}</p><p class="entry-note">${escape(entry.location)}${entry.note ? ` · ${escape(entry.note)}` : ''}</p></div></article>`).join('');
 
   const menuButton = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.main-nav');
@@ -148,4 +221,7 @@
     sections.forEach(section => observer.observe(section));
   }
   renderPublications();
+  repositoryStars.forEach(state => {
+    refreshRepositoryStars(state).catch(() => { /* A star update must not interrupt the homepage. */ });
+  });
 })();
