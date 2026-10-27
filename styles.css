@@ -13,3 +13,7 @@ dialog{width:min(640px,calc(100% - 32px));padding:25px;border:1px solid #ddd;bor
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
 @media print{.site-header,.profile-art,.menu-toggle,.publication-filters,.publication-actions,.copy-email,.site-footer a{display:none}.page-layout{display:block;margin:0;padding:0}.profile{position:static;display:block;border:0;margin-bottom:25px}.profile-details{padding:0}.cv-button{display:none}.profile-department br{display:none}.profile-name{font-size:24px}.content-section,.publication{break-inside:avoid}body{font-size:11px}.page-layout main{width:100%;max-width:none}.profile a{color:#111}}
 .publication-actions{flex-wrap:wrap;row-gap:3px}.publication-actions .github-stars{white-space:nowrap;font-variant-numeric:tabular-nums}
+
+.profile-start{font-size:12px;color:var(--link);margin:-13px 0 7px}.profile-current{font-size:12px;line-height:1.55;color:var(--muted);margin:0 0 20px}.education-item{padding-bottom:25px}.contact-section{scroll-margin-top:105px}@media(max-width:760px){.profile-start{margin:0 0 5px;font-size:11px}.profile-current{margin:0 0 10px;font-size:11px}}
+
+.education-item h3 a{color:inherit}.education-item h3 a:hover{color:var(--link)}
